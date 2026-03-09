@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, send_file, Response
+from flask import Flask, jsonify, request, send_file, Response, make_response
 from main import app, con
 from functions import *
 import fpdf
@@ -12,7 +12,8 @@ cur = con.cursor()
 
 @app.route("/grafico")
 def grafico():
-    token =request.headers.get('Authorization')
+    # token =request.headers.get('Authorization')
+    token = request.cookies.get('access_token')
     if not token:
         return jsonify({"message" : "Token de Authencação necessário"}), 401
     token = remover_bearer(token)
@@ -205,7 +206,15 @@ def login():
         if usuario:
             if check_password_hash(usuario[0], senha):
                 token = gerar_token(id_usuario=usuario[2])
-                return jsonify({"message":"Login feito com suucesso", 'token': token})
+                # return jsonify({"message":"Login feito com suucesso", 'token': token})
+                resp = make_response(jsonify({'mensagem': 'Logado com sucesso'}), 200)
+                resp.set_cookie('access_token', token,
+                                httponly=True,
+                                secure=False,
+                                samesite='Lax',
+                                path="/",
+                                max_age=3600)
+                return resp
             else:
                 return jsonify({"error":"Senha errada, tente outra senha"})
         else:
@@ -215,6 +224,32 @@ def login():
         return jsonify({"message": f"Erro ao logar o usuario: {e}"}), 500
     finally:
         cur.close()
+
+# @app.route("/login", methods=["POST"])
+# def login():
+#     try:
+#         dados = request.get_json()
+#         senha = dados.get('senha')
+#         email = dados.get('email')
+#
+#
+#
+#         cur.execute('select usuario.senha, usuario.email, usuario.id_usuario from usuario where email = ?', (email,))
+#         usuario = cur.fetchone()
+#
+#         if usuario:
+#             if check_password_hash(usuario[0], senha):
+#                 token = gerar_token(id_usuario=usuario[2])
+#                 return jsonify({"message":"Login feito com suucesso", 'token': token})
+#             else:
+#                 return jsonify({"error":"Senha errada, tente outra senha"})
+#         else:
+#             return jsonify({"error":"Usuario não encontrado"})
+#
+#     except Exception as e:
+#         return jsonify({"message": f"Erro ao logar o usuario: {e}"}), 500
+#     finally:
+#         cur.close()
 
 @app.route("/editar_user/<int:id>", methods=["PUT"])
 def editar_user(id):

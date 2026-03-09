@@ -3,7 +3,7 @@ SECRET_KEY = 'KEY_SECRETE'
 DEBUG = True
 
 DB_HOST ='localhost'
-DB_NAME = r'C:\Users\Aluno\Desktop\02-03-lays-main\BANCO.FDB'
+DB_NAME = r'C:\Users\Aluno\Desktop\Atividade\BANCO.FDB'
 
 DB_USER ='sysdba'
 DB_PASSWORD ='sysdba'
